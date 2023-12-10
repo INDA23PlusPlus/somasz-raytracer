@@ -1,4 +1,6 @@
+mod hit;
 mod ray;
+mod sphere;
 mod vec;
 
 use ray::Ray;
@@ -6,10 +8,19 @@ use std::io::{stderr, Write};
 use vec::{Color, Point3, Vec3};
 
 fn ray_color(r: &Ray) -> Color {
+    let t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, r);
+    if t > 0.0 {
+        let n = r.at(t) - Point3::new(0.0, 0.0, -1.0).normalized();
+        return 0.5 * Color::new(n.x() + 1.0, 0.0, 0.0);
+    }
+    // if hit_sphere(Point3::new(-0.2, 0.2, -1.0), 0.55, r) {
+    //     return Color::new(0.0, 1.0, 0.0);
+    // }
+
     let unit_direction = r.direction().normalized();
 
     let t = 0.5 * (unit_direction.y() + 1.0);
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(1.0, 0.2, 0.5)
+    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.2, 1.0)
 }
 
 fn main() {
