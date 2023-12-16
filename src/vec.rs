@@ -1,6 +1,9 @@
+use rand::Rng;
 use std::fmt;
 use std::fmt::Display;
-use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{
+    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Range, Sub, SubAssign,
+};
 
 #[derive(Clone, Copy)]
 pub struct Vec3 {
@@ -46,16 +49,56 @@ impl Vec3 {
     pub fn normalized(self) -> Vec3 {
         self / self.length()
     }
-}
+    pub fn random(r: Range<f64>) -> Vec3 {
+        let mut rng = rand::thread_rng();
 
-impl Color {
-    pub fn format_color(self) -> String {
-        format!(
-            "{} {} {}",
-            (255.999 * self[0]) as u64,
-            (255.999 * self[1]) as u64,
-            (255.999 * self[2]) as u64
-        )
+        Vec3 {
+            e: [
+                rng.gen_range(r.clone()),
+                rng.gen_range(r.clone()),
+                rng.gen_range(r.clone()),
+            ],
+        }
+    }
+    pub fn radnom_in_unit_sphere() -> Vec3 {
+        loop {
+            let v = Vec3::random(-1.0..1.0);
+            if v.length() < 1.0 {
+                return v;
+            }
+        }
+    }
+    pub fn random_in_hemisphere(normal: Vec3) -> Vec3 {
+        let in_unit_sphere = Self::radnom_in_unit_sphere();
+        if in_unit_sphere.dot(normal) > 0.0 {
+            // In the same hemisphere as the normal
+            in_unit_sphere
+        } else {
+            (-1.0) * in_unit_sphere
+        }
+    }
+    pub fn near_zero(self) -> bool {
+        const EPS: f64 = 1.0e-8;
+        self[0].abs() < EPS && self[1].abs() < EPS && self[2].abs() < EPS
+    }
+    pub fn reflection(self, n: Vec3) -> Vec3 {
+        self - 2.0 * self.dot(n) * n
+    }
+    pub fn format_color(self, samples_per_pixel: u64) -> String {
+        let ir = (256.0
+            * (self[0] / samples_per_pixel as f64)
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
+        let ig = (256.0
+            * (self[1] / samples_per_pixel as f64)
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
+        let ib = (256.0
+            * (self[2] / samples_per_pixel as f64)
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
+
+        format!("{} {} {}", ir, ig, ib)
     }
 }
 impl Index<usize> for Vec3 {
@@ -132,6 +175,15 @@ impl Mul<Vec3> for f64 {
     fn mul(self, rhs: Vec3) -> Vec3 {
         Vec3 {
             e: [self * rhs[0], self * rhs[1], self * rhs[2]],
+        }
+    }
+}
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Vec3 {
+        Vec3 {
+            e: [self[0] * rhs[0], self[1] * rhs[1], self[2] * rhs[2]],
         }
     }
 }
