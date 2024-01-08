@@ -1,6 +1,7 @@
 mod camera;
 mod hit;
 mod material;
+mod planes;
 mod ray;
 mod sphere;
 mod vec;
@@ -8,13 +9,13 @@ mod vec;
 use camera::Camera;
 use hit::{Hit, World};
 use material::{Lambertian, Metal};
+use planes::Plane;
 use rand::*;
 use ray::Ray;
 use sphere::Sphere;
-use std::{
-    io::{stderr, Write},
-    rc::Rc,
-};
+use std::io::{stderr, Write};
+use std::sync::Arc;
+
 use vec::{Color, Point3, Vec3};
 
 fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
@@ -57,23 +58,34 @@ fn main() {
 
     //World
     let mut world = World::new();
-    let mat_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let mat_center = Rc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let mat_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
-    let mat_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2)));
+    let mat_ground_plane = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let mat_center = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
+    let mat_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
+    let mat_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2)));
 
-    let sphere_ground = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground);
     let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center);
     let sphere_left = Sphere::new(Point3::new(-1.5, 0.0, -1.5), 0.5, mat_left);
     let sphere_right = Sphere::new(Point3::new(1.5, 0.0, -1.5), 0.5, mat_right);
+    let ground_plane = Plane::new(
+        Vec3::new(0.0, 1.0, 0.0).normalized(),
+        -0.5,
+        mat_ground_plane,
+    );
+    world.push(Box::new(ground_plane));
 
-    world.push(Box::new(sphere_ground));
     world.push(Box::new(sphere_center));
     world.push(Box::new(sphere_left));
     world.push(Box::new(sphere_right));
 
     //Camera
-    let camera = Camera::new();
+    let camera = Camera::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        ASPECT_RATIO,
+        Color::new(0.3, 0.5, 0.9),
+    );
 
     println!("P3");
     println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
