@@ -1,3 +1,4 @@
+use crate::hit::{Hit, World};
 use crate::vec::Color;
 
 use super::ray::Ray;
@@ -49,5 +50,23 @@ impl Camera {
             self.origin,
             self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin,
         )
+    }
+
+    pub fn ray_color(&self, r: &Ray, world: &World, depth: u64) -> Color {
+        if depth <= 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
+
+        if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
+            let color_from_emission = rec.mat.emitted();
+            if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
+                let color_from_scatter = attenuation * self.ray_color(&scattered, world, depth - 1);
+                color_from_emission + color_from_scatter
+            } else {
+                color_from_emission
+            }
+        } else {
+            self.background
+        }
     }
 }

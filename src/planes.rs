@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::material::Scatter;
+use crate::material::Material;
 
 use super::hit::{Hit, HitRecord};
 use super::ray::Ray;
@@ -9,11 +9,11 @@ use super::vec::{Point3, Vec3};
 pub struct Plane {
     normal: Vec3,
     distance: f64,
-    mat: Arc<dyn Scatter>,
+    mat: Arc<dyn Material>,
 }
 
 impl Plane {
-    pub fn new(normal: Vec3, d: f64, m: Arc<dyn Scatter>) -> Plane {
+    pub fn new(normal: Vec3, d: f64, m: Arc<dyn Material>) -> Plane {
         Plane {
             normal,
             distance: d,

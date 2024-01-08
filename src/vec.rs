@@ -84,19 +84,10 @@ impl Vec3 {
     pub fn reflection(self, n: Vec3) -> Vec3 {
         self - 2.0 * self.dot(n) * n
     }
-    pub fn format_color(self, samples_per_pixel: u64) -> String {
-        let ir = (256.0
-            * (self[0] / samples_per_pixel as f64)
-                .sqrt()
-                .clamp(0.0, 0.999)) as u64;
-        let ig = (256.0
-            * (self[1] / samples_per_pixel as f64)
-                .sqrt()
-                .clamp(0.0, 0.999)) as u64;
-        let ib = (256.0
-            * (self[2] / samples_per_pixel as f64)
-                .sqrt()
-                .clamp(0.0, 0.999)) as u64;
+    pub fn format_color(self, sampleper_pixel: u64) -> String {
+        let ir = (256.0 * (self[0] / sampleper_pixel as f64).sqrt().clamp(0.0, 0.999)) as u64;
+        let ig = (256.0 * (self[1] / sampleper_pixel as f64).sqrt().clamp(0.0, 0.999)) as u64;
+        let ib = (256.0 * (self[2] / sampleper_pixel as f64).sqrt().clamp(0.0, 0.999)) as u64;
 
         format!("{} {} {}", ir, ig, ib)
     }
