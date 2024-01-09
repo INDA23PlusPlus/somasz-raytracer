@@ -1,4 +1,4 @@
-use crate::hit::{Hit, World};
+use crate::hit::{Hittable, World};
 use crate::vec::Color;
 
 use super::ray::Ray;

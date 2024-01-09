@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::aabb::Aabb;
 use crate::material::Material;
 
 use super::ray::Ray;
@@ -24,13 +25,15 @@ impl HitRecord {
     }
 }
 
-pub trait Hit: Send + Sync {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+
+    fn bounding_box(&self) -> Option<Aabb>;
 }
 
-pub type World = Vec<Box<dyn Hit>>;
+pub type World = Vec<Box<dyn Hittable>>;
 
-impl Hit for World {
+impl Hittable for World {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut tmp_rec = None;
         let mut closest_so_far = t_max;
@@ -41,5 +44,9 @@ impl Hit for World {
             }
         }
         tmp_rec
+    }
+
+    fn bounding_box(&self) -> Option<Aabb> {
+        None
     }
 }

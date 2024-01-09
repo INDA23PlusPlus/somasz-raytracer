@@ -1,3 +1,4 @@
+mod aabb;
 mod camera;
 mod hit;
 mod material;
@@ -7,7 +8,7 @@ mod sphere;
 mod vec;
 
 use camera::Camera;
-use hit::{Hit, World};
+use hit::{Hittable, World};
 use material::{Lambertian, Metal};
 use planes::Plane;
 use rand::*;
@@ -25,7 +26,7 @@ fn main() {
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const IMAGE_WIDTH: u64 = 256;
     const IMAGE_HEIGHT: u64 = ((256 as f64) / ASPECT_RATIO) as u64;
-    const SAMPLEPER_PIXEL: u64 = 100;
+    const SAMPLEPER_PIXEL: u64 = 1000;
     const MAX_DEPTH: u64 = 50;
 
     //World

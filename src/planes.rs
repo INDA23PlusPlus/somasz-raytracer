@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
+use crate::aabb::Aabb;
 use crate::material::Material;
 
-use super::hit::{Hit, HitRecord};
+use super::hit::{HitRecord, Hittable};
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
 
@@ -10,6 +11,7 @@ pub struct Plane {
     normal: Vec3,
     distance: f64,
     mat: Arc<dyn Material>,
+    bbox: Aabb,
 }
 
 impl Plane {
@@ -22,7 +24,7 @@ impl Plane {
     }
 }
 
-impl Hit for Plane {
+impl Hittable for Plane {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let dn = r.direction().dot(self.normal);
 

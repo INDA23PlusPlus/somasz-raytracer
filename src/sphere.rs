@@ -1,28 +1,31 @@
 use std::sync::Arc;
 
-use crate::material::Material;
-
-use super::hit::{Hit, HitRecord};
+use super::hit::{HitRecord, Hittable};
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
+use crate::aabb::Aabb;
+use crate::material::Material;
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
     mat: Arc<dyn Material>,
+    bbox: Aabb,
 }
 
 impl Sphere {
     pub fn new(cen: Point3, rad: f64, m: Arc<dyn Material>) -> Sphere {
+        let rvec = Vec3::new(rad, rad, rad);
         Sphere {
             center: cen,
             radius: rad,
             mat: m,
+            bbox: Aabb::new(cen - rvec, cen + rvec),
         }
     }
 }
 
-impl Hit for Sphere {
+impl Hittable for Sphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.origin() - self.center;
         let a = r.direction().length().powi(2);
@@ -54,5 +57,8 @@ impl Hit for Sphere {
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, outward_normal);
         Some(rec)
+    }
+    fn bounding_box(&self) -> Option<Aabb> {
+        Some(self.bbox)
     }
 }
