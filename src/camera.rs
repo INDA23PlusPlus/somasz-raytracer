@@ -1,4 +1,4 @@
-use crate::hit::{Hittable, World};
+use crate::hit::{Hittable, HittableList};
 use crate::vec::Color;
 
 use super::ray::Ray;
@@ -52,7 +52,7 @@ impl Camera {
         )
     }
 
-    pub fn ray_color(&self, r: &Ray, world: &World, depth: u64) -> Color {
+    pub fn ray_color(&self, r: &Ray, world: &HittableList, depth: u64) -> Color {
         if depth <= 0 {
             return Color::new(0.0, 0.0, 0.0);
         }

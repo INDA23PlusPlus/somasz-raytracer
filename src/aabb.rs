@@ -1,7 +1,7 @@
 use std::mem::swap;
 
 use crate::{ray::Ray, vec::Point3};
-
+#[derive(Clone)]
 pub struct Aabb {
     x: Interval,
     y: Interval,
@@ -50,6 +50,14 @@ impl Aabb {
         }
         true
     }
+
+    pub fn from_two_aabbs(box0: Aabb, box1: Aabb) -> Aabb {
+        Aabb {
+            x: Interval::from_two_intervals(box0.x, box1.x),
+            y: Interval::from_two_intervals(box0.y, box1.y),
+            z: Interval::from_two_intervals(box0.z, box1.z),
+        }
+    }
 }
 #[derive(Clone)]
 pub struct Interval {
@@ -69,5 +77,12 @@ impl Interval {
         let padding = delta / 2.0;
         self.min -= padding;
         self.max += padding;
+    }
+
+    pub fn from_two_intervals(a: Interval, b: Interval) -> Interval {
+        Interval {
+            max: f64::max(a.max, b.max),
+            min: f64::min(a.min, b.min),
+        }
     }
 }

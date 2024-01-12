@@ -59,6 +59,6 @@ impl Hittable for Sphere {
         Some(rec)
     }
     fn bounding_box(&self) -> Option<Aabb> {
-        Some(self.bbox)
+        Some(self.bbox.clone())
     }
 }
