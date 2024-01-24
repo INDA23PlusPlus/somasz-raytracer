@@ -1,7 +1,7 @@
 use std::arch::x86_64::{__m128, _mm_cmplt_ps, _mm_dp_ps, _mm_extract_ps, _mm_mul_ps, _mm_set1_ps};
 use std::sync::Arc;
 
-use crate::material::Scatter;
+use crate::material::Material;
 use crate::ray::RegRay;
 
 use super::ray::Ray;
@@ -10,7 +10,7 @@ use super::vec::{Point3, Vec3};
 pub struct RegHitRecord {
     pub p: __m128,
     pub normal: __m128,
-    pub mat: Arc<dyn Scatter>,
+    pub mat: Arc<dyn Material>,
     pub t: f32,
     pub front_face: bool,
 }
@@ -37,7 +37,7 @@ impl RegHitRecord {
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
-    pub mat: Arc<dyn Scatter>,
+    pub mat: Arc<dyn Material>,
     pub t: f64,
     pub front_face: bool,
 }
@@ -55,6 +55,9 @@ impl HitRecord {
 
 pub trait Hit: Send + Sync {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+}
+pub trait RegHit: Send + Sync {
+    fn hit(&self, r: &RegRay, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
 pub type World = Vec<Box<dyn Hit>>;

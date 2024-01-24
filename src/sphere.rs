@@ -1,7 +1,7 @@
 use std::arch::x86_64::{__m128, _mm_set_ps};
 use std::sync::Arc;
 
-use crate::material::Scatter;
+use crate::material::Material;
 
 use super::hit::{Hit, HitRecord};
 use super::ray::Ray;
@@ -26,10 +26,10 @@ impl RegSphere {
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    mat: Arc<dyn Scatter>,
+    mat: Arc<dyn Material>,
 }
 impl Sphere {
-    pub fn new(cen: Point3, rad: f64, m: Arc<dyn Scatter>) -> Sphere {
+    pub fn new(cen: Point3, rad: f64, m: Arc<dyn Material>) -> Sphere {
         Sphere {
             center: cen,
             radius: rad,

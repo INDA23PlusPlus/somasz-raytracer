@@ -1,8 +1,10 @@
 use super::hit::HitRecord;
 use super::ray::Ray;
 use super::vec::{Color, Vec3};
-pub trait Scatter: Send + Sync {
+
+pub trait Material: Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
+    fn emitted(&self) -> Color;
 }
 
 pub struct Lambertian {
@@ -15,7 +17,7 @@ impl Lambertian {
     }
 }
 
-impl Scatter for Lambertian {
+impl Material for Lambertian {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let mut scatter_direction = rec.normal + Vec3::radnom_in_unit_sphere().normalized();
         if scatter_direction.near_zero() {
@@ -24,8 +26,11 @@ impl Scatter for Lambertian {
         let scattered = Ray::new(rec.p, scatter_direction);
         Some((self.albedo, scattered))
     }
-}
 
+    fn emitted(&self) -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
+}
 pub struct Metal {
     albedo: Color,
 }
@@ -36,7 +41,7 @@ impl Metal {
     }
 }
 
-impl Scatter for Metal {
+impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let refelcted = r_in.direction().reflection(rec.normal).normalized();
         let scattered = Ray::new(rec.p, refelcted);
@@ -46,5 +51,29 @@ impl Scatter for Metal {
         } else {
             None
         }
+    }
+
+    fn emitted(&self) -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
+}
+
+pub struct DiffuseLight {
+    albedo: Color,
+}
+
+impl DiffuseLight {
+    pub fn new(a: Color) -> DiffuseLight {
+        DiffuseLight { albedo: a }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+        None
+    }
+
+    fn emitted(&self) -> Color {
+        self.albedo
     }
 }
