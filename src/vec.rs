@@ -1,4 +1,5 @@
 use rand::Rng;
+use std::arch::x86_64::{__m128, _mm_set_ps};
 use std::fmt;
 use std::fmt::Display;
 use std::ops::{
@@ -34,6 +35,9 @@ impl Vec3 {
 
     pub fn length(self) -> f64 {
         self.dot(self).sqrt()
+    }
+    pub fn to_reg(e0: f32, e1: f32, e2: f32) -> __m128 {
+        unsafe { _mm_set_ps(e0, e1, e2, 0.0) }
     }
 
     pub fn cross(self, other: Vec3) -> Vec3 {
@@ -101,6 +105,7 @@ impl Vec3 {
         format!("{} {} {}", ir, ig, ib)
     }
 }
+
 impl Index<usize> for Vec3 {
     type Output = f64;
 

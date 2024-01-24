@@ -49,6 +49,10 @@ fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
 }
 
 fn main() {
+    sisd_version();
+}
+
+fn sisd_version() {
     //Image
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const IMAGE_WIDTH: u64 = 256;

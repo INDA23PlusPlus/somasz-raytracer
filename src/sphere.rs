@@ -1,3 +1,4 @@
+use std::arch::x86_64::{__m128, _mm_set_ps};
 use std::sync::Arc;
 
 use crate::material::Scatter;
@@ -6,12 +7,27 @@ use super::hit::{Hit, HitRecord};
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
 
+pub struct RegSphere {
+    center: __m128,
+    radius: f32,
+    mat: Arc<dyn Scatter>,
+}
+
+impl RegSphere {
+    pub fn new(cen: (f32, f32, f32), rad: f32, m: Arc<dyn Scatter>) -> RegSphere {
+        RegSphere {
+            center: unsafe { _mm_set_ps(cen.0, cen.1, cen.2, 0.0) },
+            radius: rad,
+            mat: m,
+        }
+    }
+}
+
 pub struct Sphere {
     center: Point3,
     radius: f64,
     mat: Arc<dyn Scatter>,
 }
-
 impl Sphere {
     pub fn new(cen: Point3, rad: f64, m: Arc<dyn Scatter>) -> Sphere {
         Sphere {

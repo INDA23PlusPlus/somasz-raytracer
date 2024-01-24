@@ -1,9 +1,38 @@
+use std::arch::x86_64::{__m128, _mm_cmplt_ps, _mm_dp_ps, _mm_extract_ps, _mm_mul_ps, _mm_set1_ps};
 use std::sync::Arc;
 
 use crate::material::Scatter;
+use crate::ray::RegRay;
 
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
+
+pub struct RegHitRecord {
+    pub p: __m128,
+    pub normal: __m128,
+    pub mat: Arc<dyn Scatter>,
+    pub t: f32,
+    pub front_face: bool,
+}
+
+impl RegHitRecord {
+    pub fn set_face_normal(&mut self, ray: &RegRay, outward_normal: __m128) -> () {
+        self.front_face = unsafe {
+            _mm_extract_ps(
+                _mm_cmplt_ps(
+                    _mm_dp_ps(ray.direction(), outward_normal, 3),
+                    _mm_set1_ps(0.0),
+                ),
+                1,
+            ) < 0
+        };
+        self.normal = if self.front_face {
+            outward_normal
+        } else {
+            unsafe { _mm_mul_ps(_mm_set1_ps(-1.0), outward_normal) }
+        };
+    }
+}
 
 pub struct HitRecord {
     pub p: Point3,
