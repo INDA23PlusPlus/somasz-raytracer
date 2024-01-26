@@ -1,4 +1,4 @@
-use crate::hit::{Hit, World};
+use crate::hit::{Hit, RegHit, RegWorld, World};
 use crate::vec::Color;
 
 use super::ray::Ray;
@@ -61,6 +61,24 @@ impl Camera {
             let color_from_emission = rec.mat.emitted();
             if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
                 let color_from_scatter = attenuation * self.ray_color(&scattered, world, depth - 1);
+                color_from_emission + color_from_scatter
+            } else {
+                color_from_emission
+            }
+        } else {
+            self.background
+        }
+    }
+
+    pub fn reg_ray_color(&self, r: &Ray, world: &RegWorld, depth: u64) -> Color {
+        if depth <= 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
+        if let Some(rec) = world.reg_hit(r, 0.001, f64::INFINITY) {
+            let color_from_emission = rec.mat.emitted();
+            if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
+                let color_from_scatter =
+                    attenuation * self.reg_ray_color(&scattered, world, depth - 1);
                 color_from_emission + color_from_scatter
             } else {
                 color_from_emission

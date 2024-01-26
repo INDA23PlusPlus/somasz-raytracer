@@ -31,6 +31,7 @@ impl Material for Lambertian {
         Color::new(0.0, 0.0, 0.0)
     }
 }
+
 pub struct Metal {
     albedo: Color,
 }

@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::arch::x86_64::{__m128, _mm_set_ps};
+use std::arch::x86_64::{__m128, _mm_extract_ps, _mm_set_ps};
 use std::fmt;
 use std::fmt::Display;
 use std::ops::{
@@ -36,10 +36,17 @@ impl Vec3 {
     pub fn length(self) -> f64 {
         self.dot(self).sqrt()
     }
-    pub fn to_reg(e0: f32, e1: f32, e2: f32) -> __m128 {
-        unsafe { _mm_set_ps(e0, e1, e2, 0.0) }
+    pub fn to_reg(&self) -> __m128 {
+        unsafe { _mm_set_ps(self.x() as f32, self.y() as f32, self.z() as f32, 0.0) }
     }
 
+    pub fn from_reg(r: __m128) -> Vec3 {
+        let e0 = unsafe { _mm_extract_ps(r, 1) as f64 };
+        let e1 = unsafe { _mm_extract_ps(r, 2) as f64 };
+        let e2 = unsafe { _mm_extract_ps(r, 3) as f64 };
+
+        Vec3 { e: [e0, e1, e2] }
+    }
     pub fn cross(self, other: Vec3) -> Vec3 {
         Vec3 {
             e: [
