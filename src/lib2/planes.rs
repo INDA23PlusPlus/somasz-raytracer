@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::material::Material;
+use crate::lib2::material::Material;
 
 use super::hit::{Hit, HitRecord};
 use super::ray::Ray;

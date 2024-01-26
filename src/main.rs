@@ -1,36 +1,29 @@
-mod camera;
-mod hit;
-mod material;
-mod planes;
-mod ray;
-mod sphere;
-mod vec;
-
-use camera::Camera;
-use hit::{Hit, World};
-use material::{Lambertian, Metal};
-use planes::Plane;
+mod lib2;
+use crate::lib2::camera::Camera;
+use crate::lib2::hit::{Hit, World};
+use crate::lib2::material::{Lambertian, Metal};
+use crate::lib2::planes::Plane;
+use crate::lib2::ray::Ray;
+use crate::lib2::sphere::Sphere;
 use rand::*;
-use ray::Ray;
-use sphere::Sphere;
 use std::io::{stderr, Write};
 use std::sync::Arc;
 
-use vec::{Color, Point3, Vec3};
+use crate::lib2::vec::{Color, Point3, Vec3};
 
-use crate::hit::RegWorld;
-use crate::material::DiffuseLight;
+use crate::lib2::hit::RegWorld;
+use crate::lib2::material::DiffuseLight;
 
+use lib2::{simd_version, sisd_version};
 fn main() {
+    simd();
+}
+
+fn sisd() {
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const IMAGE_WIDTH: u64 = 256;
-    const IMAGE_HEIGHT: u64 = ((256 as f64) / ASPECT_RATIO) as u64;
-    const SAMPLES_PER_PIXEL: u64 = 100;
-    const MAX_DEPTH: u64 = 5;
 
     //World
     let mut world = World::new();
-    let mut reg_world = RegWorld::new();
     let mat_ground_plane = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let mat_center = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
     let mat_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
@@ -53,6 +46,39 @@ fn main() {
     world.push(Box::new(sphere_left));
     world.push(Box::new(sphere_right));
 
+    //Camera
+    let camera = Camera::new(
+        Point3::new(0.0, 0.0, 1.3),
+        Point3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        ASPECT_RATIO,
+        Color::new(0.0, 0.0, 0.0), // Color::new(0.70, 0.80, 1.00),
+    );
+    sisd_version(&world, camera);
+}
+
+fn simd() {
+    const ASPECT_RATIO: f64 = 16.0 / 9.0;
+
+    //World
+    let mut reg_world = RegWorld::new();
+    let mat_ground_plane = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let mat_center = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
+    let mat_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
+    let mat_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2)));
+    let mat_light = Arc::new(DiffuseLight::new(Color::new(4.0, 4.0, 4.0)));
+
+    let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center);
+    let sphere_left = Sphere::new(Point3::new(-1.5, 0.0, -1.5), 0.5, mat_left);
+    let sphere_right = Sphere::new(Point3::new(1.5, 0.0, -1.5), 0.5, mat_right);
+    let ground_plane = Plane::new(
+        Vec3::new(0.0, 1.0, 0.0).normalized(),
+        -0.5,
+        mat_ground_plane,
+    );
+    let sphere_light = Sphere::new(Point3::new(0.0, 1.3, -1.3), 0.5, mat_light);
+
     reg_world.push(Box::new(sphere_light));
     reg_world.push(Box::new(sphere_center));
     reg_world.push(Box::new(sphere_left));
@@ -67,73 +93,5 @@ fn main() {
         ASPECT_RATIO,
         Color::new(0.0, 0.0, 0.0), // Color::new(0.70, 0.80, 1.00),
     );
-    // sisd_version(world, camera);
-    simd_version(reg_world, camera);
-}
-pub fn simd_version(world: RegWorld, camera: Camera) {
-    const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const IMAGE_WIDTH: u64 = 256;
-    const IMAGE_HEIGHT: u64 = ((256 as f64) / ASPECT_RATIO) as u64;
-    const SAMPLES_PER_PIXEL: u64 = 100;
-    const MAX_DEPTH: u64 = 5;
-
-    //Image
-    println!("P3");
-    println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
-    println!("255");
-    let mut rng = rand::thread_rng();
-    for j in (0..IMAGE_HEIGHT).rev() {
-        eprint!("\rScanlines remaining {:3}", (IMAGE_HEIGHT - j - 1));
-        stderr().flush().unwrap();
-        for i in 0..IMAGE_WIDTH {
-            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-            for _ in 0..SAMPLES_PER_PIXEL {
-                let radnom_v: f64 = rng.gen();
-                let radnom_u: f64 = rng.gen();
-
-                let u = ((i as f64) + radnom_u) / (IMAGE_WIDTH - 1) as f64;
-                let v = ((j as f64) + radnom_v) / (IMAGE_HEIGHT - 1) as f64;
-                let ray = camera.get_ray(u, v);
-
-                pixel_color += camera.reg_ray_color(&ray, &world, MAX_DEPTH);
-            }
-
-            println!("{}", pixel_color.format_color(SAMPLES_PER_PIXEL))
-        }
-    }
-    eprintln!("Done!")
-}
-
-pub fn sisd_version(world: World, camera: Camera) {
-    const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const IMAGE_WIDTH: u64 = 256;
-    const IMAGE_HEIGHT: u64 = ((256 as f64) / ASPECT_RATIO) as u64;
-    const SAMPLES_PER_PIXEL: u64 = 100;
-    const MAX_DEPTH: u64 = 5;
-
-    //Image
-    println!("P3");
-    println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
-    println!("255");
-    let mut rng = rand::thread_rng();
-    for j in (0..IMAGE_HEIGHT).rev() {
-        eprint!("\rScanlines remaining {:3}", (IMAGE_HEIGHT - j - 1));
-        stderr().flush().unwrap();
-        for i in 0..IMAGE_WIDTH {
-            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-            for _ in 0..SAMPLES_PER_PIXEL {
-                let radnom_v: f64 = rng.gen();
-                let radnom_u: f64 = rng.gen();
-
-                let u = ((i as f64) + radnom_u) / (IMAGE_WIDTH - 1) as f64;
-                let v = ((j as f64) + radnom_v) / (IMAGE_HEIGHT - 1) as f64;
-                let ray = camera.get_ray(u, v);
-
-                pixel_color += camera.ray_color(&ray, &world, MAX_DEPTH);
-            }
-
-            println!("{}", pixel_color.format_color(SAMPLES_PER_PIXEL))
-        }
-    }
-    eprintln!("Done!")
+    simd_version(&reg_world, camera);
 }

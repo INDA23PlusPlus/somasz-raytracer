@@ -1,7 +1,7 @@
 use std::arch::x86_64::{__m128, _mm_cmplt_ps, _mm_dp_ps, _mm_extract_ps, _mm_mul_ps, _mm_set1_ps};
 use std::sync::Arc;
 
-use crate::material::Material;
+use crate::lib2::material::Material;
 
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};

@@ -41,9 +41,9 @@ impl Vec3 {
     }
 
     pub fn from_reg(r: __m128) -> Vec3 {
-        let e0 = unsafe { _mm_extract_ps(r, 1) as f64 };
-        let e1 = unsafe { _mm_extract_ps(r, 2) as f64 };
-        let e2 = unsafe { _mm_extract_ps(r, 3) as f64 };
+        let e0 = unsafe { f64::from_bits(_mm_extract_ps(r, 1) as u64) };
+        let e1 = unsafe { f64::from_bits(_mm_extract_ps(r, 2) as u64) };
+        let e2 = unsafe { f64::from_bits(_mm_extract_ps(r, 3) as u64) };
 
         Vec3 { e: [e0, e1, e2] }
     }

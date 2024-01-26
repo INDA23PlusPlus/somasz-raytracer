@@ -1,9 +1,9 @@
-use crate::hit::{Hit, RegHit, RegWorld, World};
-use crate::vec::Color;
+use crate::lib2::hit::{Hit, RegHit, RegWorld, World};
+use crate::lib2::vec::Color;
 
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
-
+#[derive(Clone, Copy)]
 pub struct Camera {
     origin: Point3,
     lower_left_corner: Point3,
